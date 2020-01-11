@@ -108,7 +108,7 @@ router.post('/seleccionarZona', (req, res, next) => {
     if (req.body.tipo == 'zoom_in') {
         let string = 'zoom_in ' + req.body.x[0] + ' '+ req.body.x[1] + ' '+ req.body.y[0] + ' ' + req.body.y[1];
         filename = req.body.filename;
-        let comandoString = 'echo "' + string + '" >> ' + filename + 'in.txt';
+        let comandoString = 'echo "' + string + '" >> ../tempfiles/' + filename + 'in.txt';
         let comando = 'cd .. ; cd ibex-lib ;' + comandoString;
         //comando = 'cd.. ; cd ibex-lib ; pwd'
         console.log(comando);
@@ -122,7 +122,7 @@ router.post('/seleccionarZona', (req, res, next) => {
     if (req.body.tipo == 'zoom_out') {
         let string = 'zoom_out 1 1 1 1';
         filename = req.body.filename;
-        let comandoString = 'echo "' + string + '" >> ' + filename + 'in.txt';
+        let comandoString = 'echo "' + string + '" >> ../tempfiles/' + filename + 'in.txt';
         let comando = 'cd .. ; cd ibex-lib ;' + comandoString;
         //comando = 'cd.. ; cd ibex-lib ; pwd'
         console.log(comando);
@@ -185,12 +185,12 @@ function crearInstanciaWithFile(filename,string,load,save) {
     console.log(save);
     
     if(load){
-        instancia = './__build__/plugins/optim-mop/ibexmop ../temp/'+ filename + '/'+ load +' --cy-contract-full --eps_r=0.001 --ub=no --server_mode --server_in=' + filename + 'in.txt --server_out=' + filename + 'out.txt --input_file=../temp/'+ filename + '/' +save;
+        instancia = './__build__/plugins/optim-mop/ibexmop ../temp/'+ filename + '/'+ load +' --cy-contract-full --eps_r=0.001 --ub=no --server_mode --server_in=../tempfiles/' + filename + 'in.txt --server_out=../tempfiles/' + filename + 'out.txt --input_file=../temp/'+ filename + '/' +save;
     }
     else{
         ress = createInstanceFile(string,filename)
         console.log("archvio creado");
-        instancia = './__build__/plugins/optim-mop/ibexmop ../temp/'+ filename+ '/load' + filename+ 'ins.txt --cy-contract-full --eps_r=0.001 --ub=no --server_mode --server_in=' + filename + 'in.txt --server_out=' + filename + 'out.txt';
+        instancia = './__build__/plugins/optim-mop/ibexmop ../temp/'+ filename+ '/load' + filename+ 'ins.txt --cy-contract-full --eps_r=0.001 --ub=no --server_mode --server_in=../tempfiles/' + filename + 'in.txt --server_out=../tempfiles/' + filename + 'out.txt';
         console.log("instnacia string creado");
         
     }
@@ -209,9 +209,9 @@ function crearInstanciaWithFile(filename,string,load,save) {
 router.get('/getDatos/:nombreArchivo', (req, res, next) => {
     filename = req.params.nombreArchivo;
     var fs = require('fs');
-    var contents = fs.readFile('../ibex-lib/' + filename + 'out.txt', 'utf8', function (err, contents1) {
-        var contents = fs.readFile('../ibex-lib/' + filename + 'solution.txt', 'utf8', function (err, contents2) {
-            var contents = fs.readFile('../ibex-lib/' + filename + 'out.txt.state', 'utf8', function (err, contents3) {
+    var contents = fs.readFile('../tempfiles/' + filename + 'out.txt', 'utf8', function (err, contents1) {
+        var contents = fs.readFile('../tempfiles/' + filename + 'solution.txt', 'utf8', function (err, contents2) {
+            var contents = fs.readFile('../tempfiles/' + filename + 'out.txt.state', 'utf8', function (err, contents3) {
                 console.log(contents2);
                 console.log('Datos Enviados desde :::' + filename + ':::');
                 res.status(200).json({
@@ -226,12 +226,6 @@ router.get('/getDatos/:nombreArchivo', (req, res, next) => {
 
 });
 
-router.delete('/:orderId', (req, res, next) => {
-    res.status(200).json({
-        message: 'Order deleted',
-        orderId: req.params.orderId
-    });
-});
 
 router.post('/getSolution', (req, res, next) => {
     var fs = require('fs');
@@ -240,7 +234,7 @@ router.post('/getSolution', (req, res, next) => {
         //get_solution output_file y1 y2
         let filename = req.body.filename;
         let string = 'upper_envelope ' + filename + 'solution.txt ' + req.body.x + ' ' + req.body.y;
-        let comandoString = 'echo "' + string + '" >> ' + filename + 'in.txt';
+        let comandoString = 'echo "' + string + '" >> ../tempfiles/' + filename + 'in.txt';
         let comando = 'cd .. ; cd ibex-lib ;' + comandoString;
 
         //comando = 'cd.. ; cd ibex-lib ; pwd'
@@ -266,7 +260,7 @@ router.post('/focus', (req, res, next) => {
         //get_solution output_file y1 y2
         let filename = req.body.filename;
         let string = 'rpm '+ filename + 'sol.txt '+ req.body.x + ' ' + req.body.y;
-        let comandoString = 'echo "' + string + '" >> ' + filename + 'in.txt';
+        let comandoString = 'echo "' + string + '" >> ../tempfiles/' + filename + 'in.txt';
         let comando = 'cd .. ; cd ibex-lib ;' + comandoString;
 
         //comando = 'cd.. ; cd ibex-lib ; pwd'
@@ -293,7 +287,10 @@ router.post('/comando', (req, res, next) => {
     console.log(req.body);
     let filename = req.body.filename;
     let string = value;
-    let comandoString = 'echo "' + string + '" >> ' + filename + 'in.txt';
+    if(value == 'save'){
+        string = 'save ../temp/' + filename + '/save' + filename + '.state';
+    }
+    let comandoString = 'echo "' + string + '" >> ../tempfiles/' + filename + 'in.txt';
     let comando = 'cd .. ; cd ibex-lib ;' + comandoString;
 
     //comando = 'cd.. ; cd ibex-lib ; pwd'
